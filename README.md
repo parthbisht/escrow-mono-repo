@@ -57,4 +57,4 @@ npm run prisma:migrate --workspace escrow-backend
 npm run start:dev --workspace escrow-backend
 ```
 
-See `apps/backend/README.md` for backend architecture, API details, and blockchain sync behavior.
+See `apps/backend/README.md` for backend architecture, API details, and blockchain sync behavior, and `apps/frontend/README.md` for the wallet/UI integration setup.
