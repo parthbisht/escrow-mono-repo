@@ -1,25 +1,25 @@
+import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { EscrowsModule } from './escrows/escrows.module';
+import { ConfigModule } from '@nestjs/config';
+import configuration from './config/configuration';
+import { validateEnv } from './config/validate-env';
+import { PrismaModule } from './prisma/prisma.module';
+import { EscrowModule } from './modules/escrow/escrow.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('POSTGRES_HOST', 'localhost'),
-        port: configService.get<number>('POSTGRES_PORT', 5432),
-        username: configService.get<string>('POSTGRES_USER', 'postgres'),
-        password: configService.get<string>('POSTGRES_PASSWORD', 'postgres'),
-        database: configService.get<string>('POSTGRES_DB', 'escrow'),
-        autoLoadEntities: true,
-        synchronize: false
-      })
+    ConfigModule.forRoot({
+      isGlobal: true,
+      cache: true,
+      load: [configuration],
+      validate: validateEnv,
+      envFilePath: ['apps/backend/.env', '.env']
     }),
-    EscrowsModule
+    CacheModule.register({ isGlobal: true, ttl: 5_000 }),
+    PrismaModule,
+    EscrowModule,
+    HealthModule
   ]
 })
 export class AppModule {}
