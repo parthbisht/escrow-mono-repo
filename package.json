@@ -1,22 +1,18 @@
 {
-  "name": "escrow-smart-contract",
-  "version": "1.0.0",
-  "description": "Production-grade Hardhat escrow smart contract project",
+  "name": "escrow-monorepo",
   "private": true,
-  "type": "commonjs",
+  "version": "1.0.0",
+  "workspaces": [
+    "apps/smart-contract",
+    "apps/frontend",
+    "apps/backend"
+  ],
   "scripts": {
-    "clean": "hardhat clean",
-    "compile": "hardhat compile",
-    "test": "hardhat test",
-    "coverage": "hardhat coverage",
-    "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia"
-  },
-  "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-    "dotenv": "^16.4.5",
-    "hardhat": "^2.22.18"
-  },
-  "dependencies": {
-    "@openzeppelin/contracts": "^5.1.0"
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "dev:frontend": "npm run dev --workspace frontend-dapp",
+    "dev:backend": "npm run start:dev --workspace escrow-backend",
+    "dev:contracts": "npm run test --workspace escrow-contracts"
   }
 }

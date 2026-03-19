@@ -1,108 +1,116 @@
-# Decentralized Escrow Hardhat Project
+# Escrow Platform Monorepo
 
-Production-oriented Hardhat project for a decentralized ETH escrow system with dispute resolution, inactivity timeouts, and a reentrancy attack simulation.
+Production-oriented monorepo containing the decentralized escrow smart contracts, a React frontend, and a NestJS + PostgreSQL backend.
 
 ## Folder Structure
 
 ```text
 .
-├── .env.example
-├── contracts
-│   ├── Escrow.sol
-│   └── mocks
-│       └── ReentrantSeller.sol
-├── hardhat.config.js
-├── package.json
+├── .gitignore
 ├── README.md
-├── scripts
-│   └── deploy.js
-└── test
-    └── Escrow.test.js
+├── package.json
+└── apps
+    ├── backend
+    │   ├── .env.example
+    │   ├── nest-cli.json
+    │   ├── package.json
+    │   ├── src
+    │   │   ├── app.module.ts
+    │   │   ├── escrows
+    │   │   │   ├── dto
+    │   │   │   │   └── create-escrow.dto.ts
+    │   │   │   ├── escrow.entity.ts
+    │   │   │   ├── escrows.controller.ts
+    │   │   │   ├── escrows.module.ts
+    │   │   │   └── escrows.service.ts
+    │   │   └── main.ts
+    │   ├── test
+    │   │   └── app.e2e-spec.ts
+    │   └── tsconfig.json
+    ├── frontend
+    │   ├── index.html
+    │   ├── package.json
+    │   ├── src
+    │   │   ├── App.jsx
+    │   │   ├── components
+    │   │   │   └── EscrowCard.jsx
+    │   │   ├── main.jsx
+    │   │   └── styles.css
+    │   └── vite.config.js
+    └── smart-contract
+        ├── .env.example
+        ├── contracts
+        │   ├── Escrow.sol
+        │   └── mocks
+        │       └── ReentrantSeller.sol
+        ├── hardhat.config.js
+        ├── package.json
+        ├── scripts
+        │   └── deploy.js
+        └── test
+            └── Escrow.test.js
 ```
 
-## Features
+## Workspaces
 
-- Buyer-funded escrow creation with seller and arbitrator roles.
-- Lifecycle states: `Pending`, `Delivered`, `Disputed`, `Resolved`, `Cancelled`.
-- IPFS metadata support for order details.
-- Buyer-controlled release, dispute opening, and seller inactivity cancellation.
-- Arbitrator dispute splitting.
-- Seller withdrawal after the post-delivery buyer review window expires.
-- `ReentrancyGuard`, CEI ordering, and low-level `call` ETH transfers.
-- Storage packing via `uint96` and `uint64` fields.
+- `apps/smart-contract`: Hardhat workspace for the Solidity escrow contract.
+- `apps/frontend`: React + Vite frontend scaffold for the DApp experience.
+- `apps/backend`: NestJS REST API scaffold configured for PostgreSQL persistence.
 
-## Contract Overview
+## Smart Contract Workspace
 
-### Main entrypoints
+The contract workspace keeps the previously requested escrow functionality:
 
-- `createEscrow(seller, arbitrator, deliveryTime, metadata)` payable
-- `markDelivered(escrowId)`
-- `releaseFunds(escrowId)`
-- `openDispute(escrowId)`
-- `resolveDispute(escrowId, buyerAmount, sellerAmount)`
-- `cancelEscrow(escrowId)`
-- `sellerWithdraw(escrowId)`
+- Solidity `^0.8.20`
+- OpenZeppelin `ReentrancyGuard`
+- Packed escrow storage (`uint96`, `uint64`)
+- IPFS metadata support
+- Delivery, dispute, cancellation, and withdrawal flows
+- Hardhat + Chai tests and deployment script
 
-### Timeout model
-
-- `deliveryTime` is an absolute Unix timestamp deadline set at escrow creation.
-- If the seller never marks delivery and the deadline passes, the buyer can call `cancelEscrow`.
-- After delivery is marked, the buyer has a fixed `REVIEW_PERIOD` of 3 days before the seller can call `sellerWithdraw`.
-
-## Setup
-
-1. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-2. Copy environment variables:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-3. Compile contracts:
-
-   ```bash
-   npm run compile
-   ```
-
-4. Run tests:
-
-   ```bash
-   npm test
-   ```
-
-## Deployment
-
-Deploy locally:
+Run from the repo root after installing dependencies:
 
 ```bash
-npx hardhat run scripts/deploy.js --network hardhat
+npm install
+npm run compile --workspace escrow-contracts
+npm run test --workspace escrow-contracts
 ```
 
-Deploy to Sepolia:
+## Frontend Workspace
+
+The frontend is a React + Vite starter for the escrow DApp UI. It includes:
+
+- A landing page for escrow creation, delivery management, and dispute resolution
+- Reusable card components
+- Styling for a production-style dashboard shell
+- `ethers` dependency for wallet and contract integrations
+
+Run locally:
 
 ```bash
-npm run deploy:sepolia
+npm run dev --workspace frontend-dapp
 ```
 
-## Security Notes
+## Backend Workspace
 
-- Reentrancy is prevented by `ReentrancyGuard` on all fund-moving functions.
-- State updates happen before external calls.
-- Role-restricted functions gate callers with explicit checks.
-- ETH transfers use `call` and revert on failure.
+The backend is a NestJS starter configured for PostgreSQL with TypeORM:
 
-## Testing Coverage
+- Global configuration and validation
+- `EscrowEntity` persistence model
+- `POST /api/escrows` and `GET /api/escrows` endpoints
+- Environment-driven Postgres connection settings
 
-The test suite covers:
+Run locally:
 
-- Escrow creation.
-- Normal seller delivery and buyer release flow.
-- Dispute initiation and arbitrator resolution.
-- Seller-missed-delivery cancellation timeout.
-- Buyer inactivity seller-withdraw timeout.
-- Reentrancy attack simulation against withdrawal.
+```bash
+cp apps/backend/.env.example apps/backend/.env
+npm run start:dev --workspace escrow-backend
+```
+
+## Suggested Next Steps
+
+1. Install workspace dependencies with `npm install`.
+2. Add database migrations for the backend.
+3. Connect the React app to wallet providers and backend APIs.
+4. Export the smart contract ABI into the frontend/backend workspaces.
+5. Add CI to run Hardhat, frontend, and backend test suites.
