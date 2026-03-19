@@ -1,5 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { EscrowState, Prisma } from '@prisma/client';
+import { EscrowState } from '../../common/enums/escrow-state.enum';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
 
@@ -66,7 +66,7 @@ export class EscrowService {
         buyer: payload.buyer,
         seller: payload.seller,
         arbitrator: payload.arbitrator,
-        amount: new Prisma.Decimal(payload.amount.toString()),
+        amount: payload.amount.toString(),
         metadata: payload.metadata,
         state: payload.state ?? EscrowState.Pending
       },
@@ -74,7 +74,7 @@ export class EscrowService {
         buyer: payload.buyer,
         seller: payload.seller,
         arbitrator: payload.arbitrator,
-        amount: new Prisma.Decimal(payload.amount.toString()),
+        amount: payload.amount.toString(),
         metadata: payload.metadata,
         state: payload.state ?? EscrowState.Pending
       }
@@ -90,8 +90,8 @@ export class EscrowService {
       where: { escrowId },
       data: {
         state,
-        buyerAmount: splitAmounts?.buyerAmount ? new Prisma.Decimal(splitAmounts.buyerAmount.toString()) : undefined,
-        sellerAmount: splitAmounts?.sellerAmount ? new Prisma.Decimal(splitAmounts.sellerAmount.toString()) : undefined
+        buyerAmount: splitAmounts?.buyerAmount?.toString(),
+        sellerAmount: splitAmounts?.sellerAmount?.toString()
       }
     });
   }

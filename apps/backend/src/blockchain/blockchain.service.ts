@@ -5,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ESCROW_CONTRACT_ABI } from '../config/abi';
 import { EscrowService } from '../modules/escrow/escrow.service';
 import { EscrowGateway } from '../modules/escrow/escrow.gateway';
-import { EscrowState } from '@prisma/client';
+import { EscrowState } from '../common/enums/escrow-state.enum';
 
 @Injectable()
 export class BlockchainService implements OnModuleInit {
